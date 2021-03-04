@@ -1,0 +1,33 @@
+---
+- name: "Apache installation using docker"
+  hosts: prod
+  gather_facts: yes                             #pour importer les variables setup
+  become: true                                  #sudo
+#  vars:
+#    ansible_sudo_pass: admin                    #password sudo
+
+  pre_tasks:
+    - name: Install EPEL repo                   #pre-requis repo avant install python-pip et docker-python
+      package:
+        name: epel-release
+        state: present
+      when:                                     #install repo si host est un centos - sinon on passe à install python-pip et docker-python
+        ansible_distribution == "CentOS"        #variable importée de gather_fact
+
+    - name: install python-pip                  #pre-requis install docker
+      yum:
+        name: python-pip
+        state: present
+        update_cache: yes
+
+    - name: Install docker python               #install docker
+      pip:
+        name: docker-py
+
+  tasks:
+    - name: Create Apache container
+      docker_container:
+        name: webapp                            #variable indiquée dans ennoncé
+        image: httpd                            #variable indiquée dans ennoncé
+        ports:
+          - "80:80"                             #variable indiquée dans ennoncé
