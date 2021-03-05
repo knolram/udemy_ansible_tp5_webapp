@@ -2,17 +2,19 @@
 - name: "Apache installation using docker"
   hosts: prod
   gather_facts: yes                             #pour importer les variables setup
-  become: true                                  #sudo
-#  vars:
-#    ansible_sudo_pass: admin                    #password sudo
+  become: true                                  #sudo - pour executer les yum
 
   pre_tasks:
-    - name: Install EPEL repo                   #pre-requis repo avant install python-pip et docker-python
+    - name: install packages git wget         #loop install git et wget sur les centos uniquement
       package:
-        name: epel-release
+        name: "{{  item  }}"
         state: present
       when:                                     #install repo si host est un centos - sinon on passe à install python-pip et docker-python
-        ansible_distribution == "CentOS"        #variable importée de gather_fact
+        ansible_distribution == "CentOS"
+      loop:
+        - epel-release
+        - git
+        - wget
 
     - name: install python-pip                  #pre-requis install docker
       yum:
@@ -25,9 +27,16 @@
         name: docker-py
 
   tasks:
+    - name: copy website file template
+      template:
+        src: index.html.j2                      #ansible trouvera le chemin dès qu'il verra le repertoire templates/
+        dest: /home/admin/index.html
+
     - name: Create Apache container
       docker_container:
         name: webapp                            #variable indiquée dans ennoncé
         image: httpd                            #variable indiquée dans ennoncé
         ports:
           - "80:80"                             #variable indiquée dans ennoncé
+        volumes:
+          - /home/admin/index.html:/usr/local/apache2/htdocs/index.html       #monte /home/admin/index.html dans repertoire apache-docker-index.html par defaut
