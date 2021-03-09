@@ -3,9 +3,11 @@
   hosts: prod
   gather_facts: yes                             #pour importer les variables setup
   become: true                                  #sudo - pour executer les yum
+  vars_files:                                   #tp7 - liste des variables importées - ici fichiers vaultés
+    - files/secrets/credential.yml             #tp7 - fichier contenant les variables vaultées
 
   pre_tasks:
-    - name: install packages git wget         #loop install git et wget sur les centos uniquement
+    - name: install packages git wget         #tp6 - loop install git et wget sur les centos uniquement
       package:
         name: "{{  item  }}"
         state: present
