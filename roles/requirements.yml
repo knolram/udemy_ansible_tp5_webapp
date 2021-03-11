@@ -1,0 +1,4 @@
+#Install an external role for wordpress
+- src: https://github.com/diranetafen/ansible-role-containerized-wordpress.git
+  version: master
+  name: ansible-role-containerized-wordpress

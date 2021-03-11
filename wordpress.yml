@@ -1,0 +1,15 @@
+---
+- hosts: prod
+  become: true
+  vars: 
+    system_user: admin                          #surcharge la var system_user: ubuntu (qui ne nous convient pas) de la repo distante "ansible-role-containerized-wordpress" definie dans roles/requirements.yml
+  vars_files:
+    - files/secrets/credential.yml              #tp7 - fichier contenant les variables vaultées
+  pre_tasks:
+    - name: create user www-data                #user utilisé dans la task /tasks/main.yml de la repo distante "ansible-role-containerized-wordpress"
+      user:
+        name: www-data
+        state: present
+
+  roles:                                                        #role de la repo distante "ansible-role-containerized-wordpress"
+    - { role: ansible-role-containerized-wordpress }            #role récupéré en local avec commande ansible-galaxy install -r roles/requirements.yml
