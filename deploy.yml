@@ -1,42 +1,22 @@
 ---
 - name: "Apache installation using docker"
   hosts: prod
-  gather_facts: yes                             #pour importer les variables setup
-  become: true                                  #sudo - pour executer les yum
-
+  become: true
+  vars_files:
+    - files/secrets/credentials.yml                          #variables vault dans groups_vars/prod.yml
   pre_tasks:
-    - name: install packages git wget         #loop install git et wget sur les centos uniquement
-      package:
-        name: "{{  item  }}"
-        state: present
-      when:                                     #install repo si host est un centos - sinon on passe à install python-pip et docker-python
-        ansible_distribution == "CentOS"
-      loop:
-        - epel-release
-        - git
-        - wget
-
-    - name: install python-pip                  #pre-requis install docker
-      yum:
-        name: python-pip
-        state: present
-        update_cache: yes
-
-    - name: Install docker python               #install docker
-      pip:
-        name: docker-py
-
+    - name: Install EPEL repo
+      package: name=epel-release state=present
+      when: ansible_distribution == "CentOS"
+    - name: install python-pip
+      yum: name=python-pip state=present update_cache=yes
+    - name: Install docker python
+      pip: name=docker-py
   tasks:
-    - name: copy website file template
-      template:
-        src: index.html.j2                      #ansible trouvera le chemin dès qu'il verra le repertoire templates/
-        dest: /home/admin/index.html
-
     - name: Create Apache container
       docker_container:
-        name: webapp                            #variable indiquée dans ennoncé
-        image: httpd                            #variable indiquée dans ennoncé
+        name: webapp
+        image: httpd
         ports:
-          - "80:80"                             #variable indiquée dans ennoncé
-        volumes:
-          - /home/admin/index.html:/usr/local/apache2/htdocs/index.html       #monte /home/admin/index.html dans repertoire apache-docker-index.html par defaut
+          - "80:80"
+
